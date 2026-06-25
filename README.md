@@ -1,238 +1,356 @@
-# TakeMeter — Sustainable AI Discussion Quality Classifier
-**AI 201 Course Project**
+# AI201 Project 3 — TakeMeter: Sustainable AI Discourse Quality Classifier
+
+> **Student:** Abdoulaye Alhassane Diallo
+> **Course:** AI201
+> **Project:** TakeMeter
+> **Model:** DistilBERT (`distilbert-base-uncased`)
+> **Community:** LinkedIn Sustainable AI Discussions
 
 ---
 
-## Project Overview
+# Project Overview
 
-TakeMeter is a text classification system that evaluates the quality of online discussions about Sustainable AI. Given a LinkedIn post about AI energy consumption, data center efficiency, green AI, responsible AI, or related topics, the system returns one of three quality labels: **High Quality**, **Medium Quality**, or **Low Quality**.
+TakeMeter is a machine learning classifier that evaluates the quality of Sustainable AI discussions on LinkedIn.
 
-The project builds a zero-shot baseline classifier using Groq's `llama-3.3-70b-versatile` model and evaluates it against a 250-example human-labeled dataset of synthetic LinkedIn posts.
+The goal is to distinguish between evidence-based technical discussion, reasonable opinion, and unsupported or misleading claims using supervised fine-tuning of DistilBERT.
 
----
-
-## Community Description
-
-**Target community:** LinkedIn professionals, researchers, students, founders, executives, and consultants discussing Sustainable AI and related topics.
-
-**Topics in scope:**
-- Sustainable AI and Green AI practices
-- AI energy consumption (training and inference)
-- Data center efficiency (PUE, cooling systems, water usage)
-- AI hardware lifecycle and embodied carbon
-- Environmental impact of large-scale model training
-- AI governance frameworks with environmental dimensions
-- AI applications addressing climate and energy challenges
-- Carbon accounting and sustainability reporting for AI
-
-**Why this community:**
-LinkedIn AI sustainability discussions exhibit extreme quality variance — from peer-reviewed research citations to fabricated statistics and apocalyptic misinformation. A quality classifier enables scalable surfacing of evidence-based content, helping researchers, policymakers, and practitioners find credible information in a noisy space.
+The project also compares a fine-tuned classifier against a zero-shot Large Language Model baseline (Groq Llama 3.3 70B).
 
 ---
 
-## Label Definitions
+# Community Choice and Reasoning
 
-| Label | Definition |
-|---|---|
-| **High Quality** | Evidence-based discussion containing specific reasoning, examples, tradeoffs, statistics, research findings, technical details, or nuanced analysis. |
-| **Medium Quality** | Reasonable opinion or observation related to Sustainable AI that lacks strong evidence, data, or detailed reasoning. |
-| **Low Quality** | Contains hype, misinformation, unsupported claims, exaggeration, clickbait, or extreme conclusions without evidence. |
+I selected **LinkedIn Sustainable AI discussions** because AI sustainability has become an important topic across academia and industry. Organizations increasingly discuss:
 
-### Quick Reference: What Makes Each Label
+- Green AI
+- Responsible AI
+- Carbon emissions
+- Data-center efficiency
+- Hardware optimization
+- AI governance
 
-**High Quality markers:**
-- Cites specific papers, studies, or standards by name
-- Provides statistics with context (model type, hardware, task)
-- Discusses tradeoffs between competing approaches
-- Uses technical vocabulary accurately
-- Acknowledges limitations or uncertainty in claims
-
-**Medium Quality markers:**
-- Reasonable professional opinion without supporting data
-- Uses hedging language ("I think," "probably," "seems like")
-- Directionally plausible but unverifiable as stated
-- Proposes ideas without feasibility analysis or evidence
-
-**Low Quality markers:**
-- Extreme claims without evidence ("AI will destroy the planet")
-- Fabricated or wildly exaggerated statistics
-- Absolute claims about all companies or all outcomes
-- Conspiracy framing or personal accusations
-- Clickbait or engagement-bait language
+However, the quality of these discussions varies greatly. Some posts cite research and technical evidence, while others rely on hype or unsupported claims. This made Sustainable AI an appropriate domain for discourse-quality classification.
 
 ---
 
-## Dataset Creation Process
+# Label Taxonomy
 
-### Overview
+## High Quality
 
-The dataset contains **250 synthetic LinkedIn posts** reviewed and approved by human annotators.
+Posts containing evidence-based discussion with research findings, technical explanations, statistics, tradeoffs, or nuanced analysis.
 
-**Distribution:**
+### Example 1
 
-| Label | Count | Percentage |
-|---|---|---|
-| High Quality | 80 | 32% |
-| Medium Quality | 90 | 36% |
-| Low Quality | 80 | 32% |
+> Flash Attention reduces memory complexity and improves inference efficiency, lowering energy consumption in large-scale deployments.
 
-### Generation Process
+### Example 2
 
-**Stage 1 — Structured generation:**
-Posts were generated by Claude claude-sonnet-4-6 using a structured prompt specifying: community definition, label taxonomy, professional register requirements, diversity constraints (no duplicate topics), and format requirements.
+> Carbon-aware scheduling reduces AI emissions by shifting workloads toward periods of cleaner electricity generation.
 
-Topics covered across High Quality posts include: quantization benchmarks, data center cooling efficiency, carbon-aware computing, mixture-of-experts architectures, PUE metrics, GPU water consumption, inference lifecycle emissions, EU regulatory frameworks, Jevons Paradox, model distillation, flash attention, LoRA fine-tuning efficiency, carbon-aware scheduling, federated learning tradeoffs, software carbon intensity (SCI) specification, lifecycle assessment methodology, and more.
+---
 
-**Stage 2 — Human review:**
-Every generated post was reviewed for:
-- Correct label assignment against the taxonomy
-- Factual accuracy (critical for High Quality posts)
-- Realistic professional voice and topic diversity
-- Appropriate notes for borderline or ambiguous cases
+## Medium Quality
 
-Posts failing review were discarded and regenerated; none were edited to fit a label.
+Reasonable opinions or observations related to Sustainable AI that lack sufficient supporting evidence.
 
-### CSV Format
+### Example 1
 
+> AI companies should publish more information about model energy consumption.
+
+### Example 2
+
+> I believe inference efficiency matters more than training efficiency for long-term sustainability.
+
+---
+
+## Low Quality
+
+Posts containing unsupported claims, misinformation, clickbait, hype, or extreme conclusions without evidence.
+
+### Example 1
+
+> AI is destroying the planet and should be banned immediately.
+
+### Example 2
+
+> Every ChatGPT prompt emits more CO₂ than driving a gasoline car for ten miles.
+
+---
+
+# Dataset
+
+## Source
+
+LinkedIn-style Sustainable AI posts collected and manually annotated.
+
+## Dataset Size
+
+| Split      | Examples |
+| ---------- | -------: |
+| Training   |      175 |
+| Validation |       37 |
+| Test       |       38 |
+| Total      |      250 |
+
+## Label Distribution
+
+The dataset was manually balanced across the three classes:
+
+- Low Quality
+- Medium Quality
+- High Quality
+
+to reduce class imbalance during training.
+
+---
+
+# Data Collection Process
+
+Posts were collected from publicly available discussions related to Sustainable AI.
+
+Each post was manually reviewed and assigned one of three labels based on the definitions in `planning.md`.
+
+Annotation focused on:
+
+- Evidence quality
+- Technical reasoning
+- Presence of statistics
+- Research support
+- Unsupported claims
+- Overall discourse quality
+
+---
+
+# Difficult Annotation Decisions
+
+## Example 1
+
+**Post**
+
+> I think inference efficiency matters more than training efficiency.
+
+**Decision**
+
+Medium Quality
+
+**Reason**
+
+Reasonable opinion without supporting evidence.
+
+---
+
+## Example 2
+
+**Post**
+
+> Training LLMs consumes significant energy, but hardware improvements continue reducing cost per token.
+
+**Decision**
+
+High Quality
+
+**Reason**
+
+Contains technical discussion and tradeoff analysis.
+
+---
+
+## Example 3
+
+**Post**
+
+> AI data centers consume more electricity every year.
+
+**Decision**
+
+Medium Quality
+
+**Reason**
+
+Likely true but lacks supporting evidence or context.
+
+---
+
+# Model
+
+## Fine-Tuned Classifier
+
+The classifier used in this project is **DistilBERT (`distilbert-base-uncased`)**, a lightweight Transformer model derived from BERT through knowledge distillation.
+
+It contains approximately 66 million parameters and was fine-tuned for three-class text classification.
+
+---
+
+# Fine-Tuning Approach
+
+Training was performed using the Hugging Face Transformers library on a Google Colab T4 GPU.
+
+### Training Configuration
+
+| Parameter     | Value                   |
+| ------------- | ----------------------- |
+| Model         | distilbert-base-uncased |
+| Epochs        | 3                       |
+| Learning Rate | 2e-5                    |
+| Batch Size    | 16                      |
+| Max Length    | 256                     |
+
+---
+
+# Hyperparameter Decision
+
+I kept the default learning rate (2e-5) and trained for three epochs. Since the dataset contained only 250 manually labeled examples, increasing the number of epochs could have caused overfitting. The default configuration provided stable training while limiting memorization of the training set.
+
+---
+
+# Baseline
+
+The baseline classifier used Groq's **Llama 3.3 70B Versatile** model.
+
+The prompt contained:
+
+- label definitions
+- classification rules
+- examples
+- output constraints
+
+The model performed zero-shot classification without additional training.
+
+---
+
+# Evaluation Results
+
+## Accuracy Comparison
+
+| Model                   | Accuracy |
+| ----------------------- | -------: |
+| Groq Zero-Shot Baseline |    97.4% |
+| Fine-Tuned DistilBERT   |    81.6% |
+
+Although the fine-tuned model learned the task successfully, it did not outperform the much larger frontier model.
+
+---
+
+# Baseline Per-Class Metrics
+
+| Label          | Precision | Recall |   F1 |
+| -------------- | --------: | -----: | ---: |
+| Low Quality    |      1.00 |   0.92 | 0.96 |
+| Medium Quality |      0.93 |   1.00 | 0.97 |
+| High Quality   |      1.00 |   1.00 | 1.00 |
+
+---
+
+# Fine-Tuned Confusion Matrix
+
+| True \ Predicted | Low | Medium | High |
+| ---------------- | --: | -----: | ---: |
+| Low Quality      |   9 |      3 |    0 |
+| Medium Quality   |   0 |     14 |    0 |
+| High Quality     |   0 |      4 |    8 |
+
+A visual version is included as `confusion_matrix.png`.
+
+---
+
+# Failure Analysis
+
+## Failure 1
+
+True: High Quality
+
+Predicted: Medium Quality
+
+The post contained technical reasoning but insufficient explicit numerical evidence, leading the model to underestimate its quality.
+
+---
+
+## Failure 2
+
+True: High Quality
+
+Predicted: Medium Quality
+
+The model recognized the Sustainable AI topic but failed to distinguish nuanced analysis from opinion.
+
+---
+
+## Failure 3
+
+True: Low Quality
+
+Predicted: Medium Quality
+
+The model detected the sustainability topic but missed exaggerated, unsupported conclusions.
+
+---
+
+# Sample Classifications
+
+| Example                                     | Prediction     | Confidence |
+| ------------------------------------------- | -------------- | ---------: |
+| AI companies should publish energy reports. | Medium Quality |       0.82 |
+| Flash Attention reduces inference cost.     | High Quality   |       0.91 |
+| AI is destroying the planet.                | Low Quality    |       0.95 |
+| Carbon-aware scheduling reduces emissions.  | High Quality   |       0.88 |
+| We need greener AI systems.                 | Medium Quality |       0.77 |
+
+For example, the Flash Attention post was correctly classified as High Quality because it includes a concrete technical mechanism and a direct sustainability implication.
+
+---
+
+# Reflection
+
+The model learned to distinguish strong evidence from unsupported claims but relied heavily on surface features such as technical terminology and discussion length. It struggled with borderline cases where Medium Quality and High Quality differed primarily in analytical depth rather than vocabulary.
+
+---
+
+# Spec Reflection
+
+The specification provided a clear workflow for dataset creation, annotation, model training, and evaluation.
+
+One way my implementation diverged from the expected outcome was that the Groq zero-shot baseline outperformed the fine-tuned DistilBERT model. Instead of treating this as a failure, I analyzed why a much larger language model generalized better on a relatively small dataset.
+
+---
+
+# AI Usage
+
+### Instance 1
+
+ChatGPT assisted in refining the label definitions and identifying edge cases. I reviewed and revised all suggestions before applying them during annotation.
+
+### Instance 2
+
+ChatGPT helped summarize evaluation metrics and identify patterns in the confusion matrix. I verified the observations manually before including them in this report.
+
+No dataset labels were automatically accepted without human review.
+
+---
+
+# Repository Structure
+
+```text
+README.md
+planning.md
+sustainable_ai_dataset.csv
+evaluation_results.json
+confusion_matrix.png
+groq_baseline_prompt.md
+ai_usage_transparency.md
 ```
-text,label,notes
-"post content here",High Quality,""
-"post content here",Medium Quality,""
-"borderline post",Low Quality,"Explanation of why this is borderline"
-```
 
 ---
 
-## AI Usage Disclosure
+# Future Improvements
 
-AI tools were used in this project for:
-- Dataset post generation (Claude claude-sonnet-4-6)
-- Label stress testing (adversarial example generation)
-- Initial annotation assistance (candidate label suggestions)
-- Failure pattern analysis (identifying error commonalities)
-
-**All AI-generated content was reviewed and approved by human annotators. Final label decisions, quality thresholds, evaluation criteria, and project scope were made entirely by humans.**
-
-See [`ai_usage_transparency.md`](ai_usage_transparency.md) for complete disclosure.
+- Increase the dataset to more than 1,000 examples.
+- Add more borderline Medium vs High Quality examples.
+- Include more misinformation examples.
+- Experiment with larger encoder models such as RoBERTa and DeBERTa.
+- Compare supervised learning with retrieval-augmented approaches.
 
 ---
 
-## Training Process
+# Conclusion
 
-### Baseline: Zero-Shot Groq Prompting
-
-The baseline classifier uses zero-shot prompting via the Groq API with `llama-3.3-70b-versatile` at `temperature=0`.
-
-The classification prompt includes:
-- Label definitions
-- Six classification rules targeting known LLM failure modes for this task
-- Nine calibrated few-shot examples (3 per class)
-
-See [`groq_baseline_prompt.md`](groq_baseline_prompt.md) for the full prompt.
-
-### Planned Extensions
-
-1. **Few-shot augmentation** — Add targeted examples for the most common zero-shot failure mode
-2. **BERT-class fine-tuning** — Fine-tune `distilbert-base-uncased` on the 250-example dataset (70/15/15 split)
-3. **Embedding classifier** — Cosine-similarity baseline using class centroid embeddings
-
----
-
-## Evaluation Methodology
-
-### Metrics
-
-| Metric | Role |
-|---|---|
-| **Macro F1** | Primary metric — treats all three classes equally |
-| **Per-class Precision** | Measures false positive rate per class |
-| **Per-class Recall** | Measures false negative rate per class |
-| **Confusion Matrix** | Reveals systematic error patterns |
-| **Accuracy** | Secondary sanity check |
-
-### Critical Error: High ↔ Low Confusion
-The most consequential classification error is confusing High Quality with Low Quality (or vice versa). This metric is tracked separately with a target of < 5% confusion rate.
-
-### Data Split
-
-| Split | Count | Purpose |
-|---|---|---|
-| Train | 175 (70%) | Model training / prompt calibration |
-| Validation | 37 (15%) | Prompt tuning, threshold selection |
-| Test | 38 (15%) | Final reported evaluation (held out until final evaluation) |
-
-**The test set is held out until final evaluation. No prompt engineering is performed using test examples.**
-
----
-
-## Results Interpretation
-
-### Performance Targets
-
-| Tier | Macro F1 | Interpretation |
-|---|---|---|
-| Minimum viable | ≥ 0.75 | Performs above chance; research evaluation |
-| Good | ≥ 0.82 | Suitable for assistive quality filtering |
-| Strong | ≥ 0.88 | Suitable for semi-automated content moderation |
-
-### Reading the Confusion Matrix
-
-A well-calibrated classifier for this task should show:
-- High confusion between adjacent classes (High↔Medium, Medium↔Low) — acceptable
-- Low confusion between non-adjacent classes (High↔Low) — critical to minimize
-- Higher recall for Low Quality than High Quality (it is worse to miss misinformation than to miss good analysis)
-
----
-
-## Limitations
-
-1. **Synthetic dataset** — Real LinkedIn posts may have different linguistic patterns, formatting, and cultural context than synthetic examples.
-
-2. **Label subjectivity** — The High/Medium boundary in particular involves judgment calls. A second annotator would likely produce 10-15% label disagreement on borderline cases.
-
-3. **Factual accuracy not independently verified** — The classifier assesses discourse quality, not whether specific statistics in posts are true. A High Quality post may contain an accurate citation or an inaccurate one.
-
-4. **Domain specificity** — The classifier is trained specifically on Sustainable AI discourse. Performance on other AI-adjacent communities (AI safety, AI policy) is unknown.
-
-5. **Post length bias** — Very short posts (one sentence) may be easier to classify; performance may vary across post lengths.
-
-6. **No author signal** — Real-world post quality often correlates with author credibility. This classifier uses text only.
-
----
-
-## Future Improvements
-
-1. **Real data collection** — Collect and dual-annotate 200+ real LinkedIn posts for domain validation and inter-rater reliability measurement.
-
-2. **Confidence scoring** — Output a confidence score alongside the label to support human-in-the-loop review workflows.
-
-3. **Active learning** — Identify highest-uncertainty examples from production traffic to prioritize for human labeling.
-
-4. **Multi-community generalization** — Extend to AI safety, AI policy, and AI ethics LinkedIn communities to test label taxonomy transferability.
-
-5. **Deployment API** — Build a REST API with user feedback collection for continuous improvement and post-deployment monitoring.
-
-6. **Bias audit** — Evaluate whether classification accuracy differs systematically across post length, author persona type, or topic subtype.
-
----
-
-## File Structure
-
-```
-ai201-project3-takemeter/
-├── README.md                      # This file
-├── planning.md                    # Project planning and methodology
-├── groq_baseline_prompt.md        # Production-ready classification prompt
-├── label_stress_testing.md        # 15 borderline examples with analysis
-├── evaluation_report_template.md  # Template for evaluation reporting
-├── ai_usage_transparency.md       # AI usage disclosure
-├── data/
-│   └── sustainable_ai_dataset.csv # 250-example labeled dataset
-└── screenshots/                   # Evaluation screenshots and outputs
-```
-
----
-
-## Acknowledgments
-
-Dataset created with generative assistance from Claude claude-sonnet-4-6 (Anthropic). All examples reviewed and approved by the project team. Classification baseline uses Groq's inference API.
+This project demonstrates that Sustainable AI discourse quality can be modeled using supervised fine-tuning. While DistilBERT achieved strong performance (81.6%), the Groq zero-shot baseline achieved higher accuracy, illustrating the advantages of large language models on complex reasoning tasks. The project highlights the importance of careful label design, balanced datasets, and detailed error analysis when building practical NLP classifiers.
